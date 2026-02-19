@@ -366,7 +366,7 @@
     <li class="nav-sub"><a href="#p2-cold-warm">Cold vs Warm Biomes</a></li>
     <li class="nav-sub"><a href="#p2-secondaries">Secondary Bonuses</a></li>
     <li class="nav-sub"><a href="#p2-gates">Hard Gates</a></li>
-    <li class="nav-sub"><a href="#p2-parasitic">Parasitic Biomes</a></li>
+    <li class="nav-sub"><a href="#p2-parasitic">Host-Restricted Biomes</a></li>
     <li><a href="#p2-hydrology">Hydrology</a></li>
     <li><a href="#p2-compat">Modded Biome Support</a></li>
 
@@ -397,7 +397,7 @@
 
 <div class="revision">
   <strong>Revision History</strong><br>
-  v1.1 — 2026-02-19 — Biome Editor: dual elevation support, Swampiness unified (Wetland Intensity merged), updated variable reference and common mistakes.<br>
+  v1.1 — 2026-02-19 — Biome Editor: dual elevation support, Swampiness unified (Wetland Intensity merged), updated variable reference and common mistakes. Updated parasitic biome terminology to "host-restricted biomes" and removed references to removed parasitic noise system.<br>
   v1.0 — 2026-02-18 — Initial release; comprehensive coverage of scoring system, all tools, and glossary.
 </div>
 
@@ -683,7 +683,7 @@
   <li><strong>Seasonality:</strong> Boreal Forest gets a bonus for high seasonal amplitude (harsh winters + warm summers). Glowforest prefers low seasonality (stable, humid conditions).</li>
 </ul>
 
-<p>Secondary percentages are capped per biome (typically ±50% for normal biomes, wider for parasitic biomes) to prevent any single factor from overwhelming the primary scoring.</p>
+<p>Secondary percentages are capped per biome (typically ±50% for normal biomes, wider for host-restricted biomes that need extreme bonuses to compete with their hosts) to prevent any single factor from overwhelming the primary scoring.</p>
 
 <h4 id="p2-gates">Hard Gates</h4>
 
@@ -699,24 +699,24 @@
 
 <p>Hard gates should only reject tiles where the biome is <em>physically impossible</em>. Overusing them (or setting thresholds too tight) is a common source of biome distribution problems.</p>
 
-<h4 id="p2-parasitic">Parasitic Biomes</h4>
+<h4 id="p2-parasitic">Host-Restricted Biomes with Noise Clumping</h4>
 
-<p>Some biomes don't compete independently — they <strong>parasitize a host biome</strong>. A parasitic biome can only appear on tiles where its host biome would already score well. It then uses <strong>noise clumping</strong> to create spatial patches (clusters of tiles) rather than appearing everywhere the host exists.</p>
+<p>Some biomes don't compete independently — they require a <strong>host biome</strong> to score well at a tile before they can compete. These biomes then use <strong>noise clumping</strong> to create spatial patches (clusters of tiles) rather than appearing everywhere the host exists. The noise system varies by biome type: Odyssey biomes use vanilla Odyssey noise patterns, while others use deterministic placement noise or percent-pass probability.</p>
 
 <p>Examples:</p>
 <ul>
-  <li><strong>Glacial Plain</strong> parasitizes Tundra/Ice Sheet. It appears as patchy frozen plains within tundra regions.</li>
-  <li><strong>Lava Field</strong> parasitizes Desert/Extreme Desert/Arid Shrubland. Rare volcanic patches in arid terrain.</li>
-  <li><strong>Scarlands</strong> parasitizes Temperate Forest. Clusters of ancient ruined cities in temperate zones.</li>
-  <li><strong>Glowforest</strong> parasitizes Temperate/Boreal/Swamp forests. Bioluminescent forest patches.</li>
-  <li><strong>Oasis</strong> parasitizes Desert. Rare scattered fertile spots in desert.</li>
+  <li><strong>Glacial Plain</strong> requires Tundra/Ice Sheet hosts. Uses vanilla Odyssey noise (threshold ≥ 0.9) to create patchy frozen plains within tundra regions.</li>
+  <li><strong>Lava Field</strong> requires Desert/Extreme Desert/Arid Shrubland hosts. Uses vanilla Odyssey noise (threshold ≥ 0.9) for rare volcanic patches in arid terrain.</li>
+  <li><strong>Scarlands</strong> requires Temperate Forest hosts. Uses vanilla Odyssey noise (threshold ≥ 0.9) with neighbor check to create clusters of ancient ruined cities.</li>
+  <li><strong>Oasis</strong> requires Desert hosts. Uses deterministic percent-pass probability (~0.5% base) for rare scattered fertile spots.</li>
 </ul>
 
-<p>Parasitic biomes have three noise parameters you can adjust in the Biome Editor:</p>
+<p><strong>Note:</strong> Glowforest is <em>not</em> host-restricted — it competes directly on climate and swampiness like other biomes.</p>
+
+<p>Host-restricted biomes have noise parameters you can adjust in the Biome Editor. The exact parameters depend on the biome's noise system:</p>
 <ul>
-  <li><strong>Noise threshold</strong> — Higher = rarer (fewer tiles pass). A threshold of 0.80 means only the top ~10% of noise values pass.</li>
-  <li><strong>Noise bonus</strong> — How much score boost tiles get when they pass the noise check.</li>
-  <li><strong>Noise penalty</strong> — How much score penalty tiles get when they fail the noise check.</li>
+  <li><strong>Odyssey biomes</strong> (Glacial Plain, Lava Field, Scarlands): <strong>Noise threshold</strong> (typically 0.9), <strong>Noise bonus</strong>, and <strong>Noise penalty</strong>. Higher threshold = rarer (fewer tiles pass).</li>
+  <li><strong>Percent-pass biomes</strong> (Oasis): <strong>Pass Probability</strong> (0–1). Lower probability = rarer placement.</li>
 </ul>
 
 
@@ -981,8 +981,8 @@
   <dt>Monsoon Boost — Threshold + Scale</dt>
   <dd>Seasonal moisture boost. Tiles with monsoon rainfall above the threshold get a scoring bonus scaled by this value.</dd>
 
-  <dt>Noise (parasitic biomes only)</dt>
-  <dd>Controls spatial clumping. See <a href="#p2-parasitic">Parasitic Biomes</a>. Shows either <strong>Threshold/Bonus/Penalty</strong> for standard parasitic biomes, or a single <strong>Pass Probability</strong> for special cases.</dd>
+  <dt>Noise (host-restricted biomes only)</dt>
+  <dd>Controls spatial clumping for biomes that require host biomes. See <a href="#p2-parasitic">Host-Restricted Biomes</a>. For Odyssey biomes (Glacial Plain, Lava Field, Scarlands), shows <strong>Threshold/Bonus/Penalty</strong>. For percent-pass biomes (Oasis), shows a single <strong>Pass Probability</strong>.</dd>
 </dl>
 
 <h4 id="p3-def-tab">BiomeDef Tab — Gameplay Overrides</h4>
@@ -1094,13 +1094,13 @@
   <dd>The side of a mountain range sheltered from prevailing winds. Receives less rainfall (rain shadow effect). Opposite of windward.</dd>
 
   <dt>Noise Clumping</dt>
-  <dd>A spatial noise pattern used by parasitic biomes to create clusters of tiles rather than uniform distribution. The noise value at each tile determines whether the parasitic biome can appear there.</dd>
+  <dd>A spatial noise pattern used by host-restricted biomes to create clusters of tiles rather than uniform distribution. Different biomes use different noise systems: Odyssey biomes use vanilla Odyssey Perlin noise, while others use deterministic placement noise or percent-pass probability.</dd>
 
   <dt>Orographic Effect</dt>
   <dd>The influence of mountains on rainfall. Air forced upward over mountains cools and drops moisture (windward enhancement). After crossing, the descending air is dry (leeward suppression / rain shadow).</dd>
 
-  <dt>Parasitic Biome</dt>
-  <dd>A biome that requires a host biome to score well at a tile before it can compete. Uses noise clumping to create spatial patches. Examples: Glacial Plain (on Tundra), Lava Field (on Desert), Scarlands (on Temperate Forest).</dd>
+  <dt>Host-Restricted Biome</dt>
+  <dd>A biome that requires a host biome to score well at a tile before it can compete. Uses noise clumping to create spatial patches. Examples: Glacial Plain (requires Tundra/Ice Sheet), Lava Field (requires Desert/Extreme Desert/Arid Shrubland), Scarlands (requires Temperate Forest), Oasis (requires Desert).</dd>
 
   <dt>Primary Score</dt>
   <dd>The base score (0–100) computed from the three weighted axes: Temperature (40%), Moisture (40%), Elevation (20%).</dd>
