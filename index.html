@@ -397,6 +397,7 @@
 
 <div class="revision">
   <strong>Revision History</strong><br>
+  v1.1 — 2026-02-19 — Biome Editor: dual elevation support, Swampiness unified (Wetland Intensity merged), updated variable reference and common mistakes.<br>
   v1.0 — 2026-02-18 — Initial release; comprehensive coverage of scoring system, all tools, and glossary.
 </div>
 
@@ -647,7 +648,7 @@
   <tr><th>Axis</th><th>Weight</th><th>What It Measures</th></tr>
   <tr><td><strong>Temperature</strong></td><td>40%</td><td>Annual mean temperature (°C). Every biome has an ideal temperature and tolerance.</td></tr>
   <tr><td><strong>Moisture</strong></td><td>40%</td><td>How wet or dry the climate is. <em>What value is used depends on whether the biome is cold or warm</em> — see <a href="#p2-cold-warm">next section</a>.</td></tr>
-  <tr><td><strong>Elevation</strong></td><td>20%</td><td>Meters above sea level. Some biomes have dual elevation profiles (e.g., Tundra appears at low polar elevations <em>and</em> at high alpine elevations).</td></tr>
+  <tr><td><strong>Elevation</strong></td><td>20%</td><td>Meters above sea level. Some biomes have <strong>dual elevation profiles</strong> (e.g., Tundra appears at low polar elevations <em>and</em> at high alpine elevations). When dual elevation is enabled, the biome scores both profiles and uses weighted combination to determine the final elevation score.</td></tr>
 </table>
 
 <p>The three axis scores are combined into a single primary score (0–100 scale). This is the base competitiveness of a biome at that tile.</p>
@@ -676,11 +677,10 @@
 <p>Secondary bonuses are meant to capture factors <strong>beyond the three primary axes</strong>. Some examples:</p>
 
 <ul>
-  <li><strong>Swampiness:</strong> Cold Bog and Tropical Swamp get large bonuses for high swampiness. Boreal Forest gets a penalty for it (forests aren't swamps).</li>
+  <li><strong>Swampiness:</strong> Cold Bog and Tropical Swamp get large bonuses for high swampiness. Boreal Forest gets a penalty for it (forests aren't swamps). When hydrology is enabled, swampiness reflects actual water flow and drainage patterns; when disabled, it uses vanilla's noise-based placement.</li>
   <li><strong>Windward/Leeward:</strong> Boreal Forest gets a bonus on windward slopes (where it rains more). Desert gets a bonus on leeward slopes (rain shadows).</li>
   <li><strong>Continentality:</strong> Cold Desert and Extreme Desert get bonuses for continental interiors (far from ocean = more extreme = more desert-like).</li>
   <li><strong>Seasonality:</strong> Boreal Forest gets a bonus for high seasonal amplitude (harsh winters + warm summers). Glowforest prefers low seasonality (stable, humid conditions).</li>
-  <li><strong>Wetland Intensity:</strong> Swamp biomes get bonuses for RP2's hydrology-computed wetland data.</li>
 </ul>
 
 <p>Secondary percentages are capped per biome (typically ±50% for normal biomes, wider for parasitic biomes) to prevent any single factor from overwhelming the primary scoring.</p>
@@ -926,7 +926,7 @@
 
 <p>The top section shows <strong>Scoring Variables</strong> as a grid of checkboxes arranged in three columns. A green check means the variable is active for this biome's scoring; a red X means it's not used. These reflect what the biome's worker actually cares about.</p>
 
-<p>You can toggle variables on and off. When a variable is checked, its controls appear in the scrollable <strong>Variable Controls</strong> section below.</p>
+<p>You can toggle variables on and off. When a variable is checked, its controls appear in the scrollable <strong>Variable Controls</strong> section below. Some variables have sub-options: for example, when "Elevation" is checked, a "Dual Elevation" checkbox appears that enables a second elevation profile with its own ideal/tolerance values and weights.</p>
 
 <h4>"Use custom values" Override</h4>
 <p>By default, the editor shows the biome's built-in values (displayed in colored brackets next to each field). Changing a value here <strong>does not take effect</strong> unless you enable <strong>"Use custom values (override native/calibrated)"</strong>. When this is checked, your custom values replace the biome's built-in scoring.</p>
@@ -946,16 +946,13 @@
   <dd>Used by <strong>warm biomes</strong> (ideal temp ≥ 0°C). The ideal AI value and tolerance. Lower AI = drier (desert ~0.05); higher AI = wetter (rainforest ~2.3). See <a href="#glossary">Glossary</a>.</dd>
 
   <dt>Ideal Elevation (m) + Elevation Tolerance</dt>
-  <dd>The biome's ideal altitude and tolerance. Some biomes have dual elevation profiles (e.g., lowland and highland).</dd>
+  <dd>The biome's ideal altitude and tolerance. Some biomes have <strong>dual elevation profiles</strong> — they can appear at two different elevation ranges (e.g., Tundra appears at low polar elevations <em>and</em> high alpine elevations). When "Dual Elevation" is checked, you can set Ideal Elevation 2, Elevation Tolerance 2, and weights for each profile.</dd>
 </dl>
 
 <p><strong>Secondary Scoring Variables</strong> (percentage modifiers on top of primary score):</p>
 <dl>
-  <dt>Swampiness (tile) — Ideal + Tolerance</dt>
-  <dd>Vanilla tile swampiness (0–1). Swamp biomes want high values; forest biomes may penalize it.</dd>
-
-  <dt>Wetland Intensity — Ideal + Tolerance</dt>
-  <dd>RP2 hydrology-computed wetland data (0–1). Like swampiness but based on actual water flow rather than noise.</dd>
+  <dt>Swampiness — Ideal + Tolerance</dt>
+  <dd>Wetland/marsh terrain score (0–1). When hydrology is enabled, this uses RP2's drainage-aware calculations (swamps form where water collects). When hydrology is disabled, it uses vanilla's noise-based swampiness. Swamp biomes get bonuses for high values; forest biomes may penalize it. This unified variable replaces the previous separate "Swampiness (tile)" and "Wetland Intensity" controls.</dd>
 
   <dt>Preferred Hilliness</dt>
   <dd>Integer 0–4: Flat, Small Hills, Large Hills, Mountainous, Impassable. Some biomes prefer specific terrain roughness.</dd>
@@ -1066,6 +1063,7 @@
   <li><strong>Using large score offsets as a first step.</strong> A +30 score offset brute-forces a biome onto tiles where it doesn't naturally fit. It's better to adjust tolerance and ideal values so the biome <em>naturally</em> scores well where you want it.</li>
   <li><strong>Forgetting the "Use custom values" toggle.</strong> Editing values in the Biome Editor does nothing unless you enable the override checkbox. This is by design — it protects against accidental changes.</li>
   <li><strong>Not understanding which moisture axis is active.</strong> If you're editing a cold biome (ideal temp &lt; 0°C), the Rainfall axis is what matters. Changing the Aridity values won't affect scoring. Look for the asterisk (*) marking the active axis.</li>
+  <li><strong>Confusing dual elevation with single elevation.</strong> When "Dual Elevation" is unchecked, only the first elevation profile is used. Check it to enable the second profile and set weights for how strongly each profile contributes to scoring.</li>
   <li><strong>Auto-load confusion.</strong> Both profiles <em>and</em> per-biome presets can auto-load. If your world always starts with unexpected biome settings, check both: the default profile in Advanced Biome Configuration, and per-biome defaults in each Biome Editor.</li>
 </ul>
 
