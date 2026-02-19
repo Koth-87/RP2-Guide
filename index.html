@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Realistic Planets 2 — World Generation Guide</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --bg-card: #16213e;
+    --bg-sidebar: #0f1629;
+    --text: #e0e0e0;
+    --text-dim: #a0a0b0;
+    --accent: #e0a040;
+    --accent-dim: #b08030;
+    --link: #60b0e0;
+    --link-hover: #90d0ff;
+    --border: #2a2a4a;
+    --green: #60c060;
+    --cyan: #50b8d8;
+    --red: #e06060;
+    --yellow: #d0c060;
+    --highlight: #2a2a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    font-size: 16px;
+  }
+
+  /* Layout */
+  .page-wrapper {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Sidebar nav */
+  nav.sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    width: 280px;
+    min-width: 280px;
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 24px 16px;
+    font-size: 14px;
+  }
+
+  nav.sidebar .nav-title {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  nav.sidebar ul { list-style: none; }
+
+  nav.sidebar li { margin-bottom: 2px; }
+
+  nav.sidebar a {
+    color: var(--text-dim);
+    text-decoration: none;
+    display: block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  nav.sidebar a:hover {
+    background: var(--highlight);
+    color: var(--link-hover);
+  }
+
+  nav.sidebar .nav-part {
+    color: var(--accent);
+    font-weight: 600;
+    margin-top: 14px;
+    margin-bottom: 4px;
+    padding: 3px 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  nav.sidebar .nav-sub {
+    padding-left: 20px;
+    font-size: 13px;
+  }
+
+  /* Main content */
+  main {
+    flex: 1;
+    min-width: 0;
+    padding: 40px 48px 80px;
+  }
+
+  /* Typography */
+  h1 {
+    color: var(--accent);
+    font-size: 2em;
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--accent-dim);
+    padding-bottom: 12px;
+  }
+
+  h1 .subtitle {
+    display: block;
+    font-size: 0.45em;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-top: 6px;
+  }
+
+  h2 {
+    color: var(--accent);
+    font-size: 1.6em;
+    margin-top: 56px;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    color: var(--link);
+    font-size: 1.2em;
+    margin-top: 32px;
+    margin-bottom: 10px;
+  }
+
+  h4 {
+    color: var(--text);
+    font-size: 1.05em;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+
+  p { margin-bottom: 14px; }
+
+  a { color: var(--link); }
+  a:hover { color: var(--link-hover); }
+
+  strong { color: #f0f0f0; }
+
+  /* Special blocks */
+  .at-a-glance {
+    background: var(--bg-card);
+    border-left: 4px solid var(--accent);
+    padding: 20px 24px;
+    margin: 20px 0 28px;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .at-a-glance .label {
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+
+  .info-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+
+  .info-box.tip { border-left: 4px solid var(--green); }
+  .info-box.warning { border-left: 4px solid var(--yellow); }
+  .info-box.important { border-left: 4px solid var(--red); }
+
+  .info-box .box-label {
+    font-weight: 700;
+    font-size: 0.85em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .info-box.tip .box-label { color: var(--green); }
+  .info-box.warning .box-label { color: var(--yellow); }
+  .info-box.important .box-label { color: var(--red); }
+
+  /* Pipeline / step lists */
+  .pipeline {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+
+  .pipeline-step {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+
+  .pipeline-step:last-child { margin-bottom: 0; }
+
+  .step-num {
+    background: var(--accent-dim);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 12px;
+    margin-top: 2px;
+  }
+
+  .step-content { flex: 1; }
+  .step-content strong { color: var(--accent); }
+
+  /* Figures / screenshots */
+  figure {
+    margin: 24px 0;
+    text-align: center;
+  }
+
+  figure img {
+    max-width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  figcaption {
+    color: var(--text-dim);
+    font-size: 0.9em;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.95em;
+  }
+
+  th {
+    background: var(--bg-card);
+    color: var(--accent);
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+    font-weight: 600;
+  }
+
+  td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.03); }
+
+  /* Lists */
+  ul, ol {
+    margin: 8px 0 14px 24px;
+  }
+
+  li { margin-bottom: 4px; }
+
+  /* Definition-style items */
+  dl { margin: 12px 0; }
+
+  dt {
+    color: var(--link);
+    font-weight: 600;
+    margin-top: 10px;
+  }
+
+  dd {
+    margin-left: 20px;
+    margin-bottom: 8px;
+    color: var(--text-dim);
+  }
+
+  /* Inline code */
+  code {
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: 'Consolas', 'Courier New', monospace;
+  }
+
+  /* Revision history */
+  .revision {
+    color: var(--text-dim);
+    font-size: 0.85em;
+    margin-bottom: 32px;
+  }
+
+  /* Responsive: collapse sidebar on small screens */
+  @media (max-width: 900px) {
+    .page-wrapper { flex-direction: column; }
+    nav.sidebar {
+      position: static;
+      width: 100%;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px;
+    }
+    main { padding: 24px 20px 60px; }
+  }
+
+  /* Print styles */
+  @media print {
+    nav.sidebar { display: none; }
+    body { background: #fff; color: #222; font-size: 11pt; }
+    main { padding: 0; }
+    h1, h2, h3 { color: #333; }
+    .at-a-glance, .info-box, .pipeline { border-color: #ccc; background: #f8f8f8; }
+    a { color: #333; text-decoration: underline; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrapper">
+
+<!-- ==================== SIDEBAR NAV ==================== -->
+<nav class="sidebar">
+  <div class="nav-title">RP2 WorldGen Guide</div>
+  <ul>
+    <li class="nav-part">Part 1 — Vanilla WorldGen</li>
+    <li><a href="#p1-glance">At a Glance</a></li>
+    <li><a href="#p1-pipeline">The Generation Pipeline</a></li>
+    <li><a href="#p1-terrain">Terrain Generation</a></li>
+    <li class="nav-sub"><a href="#p1-elevation">Elevation</a></li>
+    <li class="nav-sub"><a href="#p1-temperature">Temperature</a></li>
+    <li class="nav-sub"><a href="#p1-rainfall">Rainfall</a></li>
+    <li class="nav-sub"><a href="#p1-swampiness">Swampiness</a></li>
+    <li><a href="#p1-biomes">Biome Selection</a></li>
+    <li><a href="#p1-rest">Rivers, Lakes &amp; the Rest</a></li>
+    <li><a href="#p1-limits">Vanilla's Limitations</a></li>
+
+    <li class="nav-part">Part 2 — What RP2 Changes</li>
+    <li><a href="#p2-glance">At a Glance</a></li>
+    <li><a href="#p2-phases">The Three Phases</a></li>
+    <li><a href="#p2-layers">The 11 Climate Layers</a></li>
+    <li><a href="#p2-scoring">How Biome Scoring Works</a></li>
+    <li class="nav-sub"><a href="#p2-gaussian">The Gaussian Curve</a></li>
+    <li class="nav-sub"><a href="#p2-axes">Three Primary Axes</a></li>
+    <li class="nav-sub"><a href="#p2-cold-warm">Cold vs Warm Biomes</a></li>
+    <li class="nav-sub"><a href="#p2-secondaries">Secondary Bonuses</a></li>
+    <li class="nav-sub"><a href="#p2-gates">Hard Gates</a></li>
+    <li class="nav-sub"><a href="#p2-parasitic">Parasitic Biomes</a></li>
+    <li><a href="#p2-hydrology">Hydrology</a></li>
+    <li><a href="#p2-compat">Modded Biome Support</a></li>
+
+    <li class="nav-part">Part 3 — Using RP2's Tools</li>
+    <li><a href="#p3-nav">Navigation Overview</a></li>
+    <li><a href="#p3-modsettings">Mod Settings</a></li>
+    <li><a href="#p3-climate">Advanced Climate Settings</a></li>
+    <li><a href="#p3-biomes">Advanced Biome Configuration</a></li>
+    <li><a href="#p3-editor">Biome Editor</a></li>
+    <li class="nav-sub"><a href="#p3-worker-tab">BiomeWorker Tab</a></li>
+    <li class="nav-sub"><a href="#p3-def-tab">BiomeDef Tab</a></li>
+    <li><a href="#p3-presets">Profiles &amp; Presets</a></li>
+    <li><a href="#p3-workflow">Practical Workflow</a></li>
+    <li><a href="#p3-mistakes">Common Mistakes</a></li>
+
+    <li class="nav-part">Reference</li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ul>
+</nav>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<main>
+
+<h1>
+  Realistic Planets 2 — World Generation Guide
+  <span class="subtitle">How vanilla worldgen works, what RP2 changes, and how to use the tools</span>
+</h1>
+
+<div class="revision">
+  <strong>Revision History</strong><br>
+  v1.0 — 2026-02-19 — Initial release as HTML; comprehensive coverage of scoring system, all tools, and glossary.
+</div>
+
+<p>This guide is for players who want to understand what world generation is doing — both in vanilla RimWorld and in RP2 — without needing to read code. It covers three things:</p>
+<ol>
+  <li><strong>Part 1</strong> — How vanilla RimWorld builds a world.</li>
+  <li><strong>Part 2</strong> — What RP2 replaces, and how its climate and biome systems work.</li>
+  <li><strong>Part 3</strong> — How to use RP2's configuration tools (Advanced Biome Configuration, Biome Editor, Advanced Climate Settings).</li>
+</ol>
+<p>If you just want to start tweaking biomes, jump to <a href="#p3-nav">Part 3</a>. But if you want to understand <em>why</em> the sliders do what they do, Parts 1 and 2 will give you that foundation.</p>
+
+
+<!-- ========================================================== -->
+<!-- PART 1: VANILLA WORLDGEN                                    -->
+<!-- ========================================================== -->
+
+<h2 id="p1-glance">Part 1 — How Vanilla WorldGen Works</h2>
+
+<div class="at-a-glance">
+  <div class="label">At a Glance</div>
+  <p>Vanilla RimWorld generates a world in a fixed sequence of steps. First, the <strong>Terrain</strong> step creates every tile's elevation, temperature, rainfall, hilliness, and swampiness using layered noise functions — essentially controlled randomness shaped by latitude and elevation. Then a <strong>biome competition</strong> runs: every biome calculates a score for every tile, and the highest score wins. The scoring is simple — often just "is it cold enough?" or "is there enough rain?" — with no awareness of wind patterns, mountain rain shadows, or realistic moisture transport.</p>
+  <p>After terrain and biomes, subsequent steps convert small isolated ocean patches into <strong>lakes</strong>, trace <strong>rivers</strong> (following elevation downhill to the coast), scatter <strong>ancient sites</strong> and connect them with degraded <strong>ancient roads</strong>, create <strong>all faction settlements</strong>, then build <strong>road</strong> networks connecting those settlements. Finally, <strong>landmarks</strong> (Odyssey DLC world objects), <strong>mutators</strong> (tile-level tags like Mountain, Coast, or Caves), and geographic <strong>feature labels</strong> (mountain range names, etc.) are applied.</p>
+  <p>The result is a playable world, but one where deserts can appear next to rainforests with no transition, swamps are randomly sprinkled rather than forming in lowlands, and mountains have no effect on rainfall patterns. RP2 addresses all of this.</p>
+</div>
+
+<h3 id="p1-pipeline">The Generation Pipeline</h3>
+
+<p>World generation runs as a sequence of <strong>WorldGenSteps</strong>, each executed in a fixed order. Every step receives a deterministic seed derived from your world seed, so the same seed always produces the same world.</p>
+
+<div class="pipeline">
+  <div class="pipeline-step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Terrain</strong> — The big one. Generates elevation, temperature, rainfall, hilliness, swampiness, and assigns biomes. Everything else builds on this.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Lakes</strong> — Finds small isolated ocean patches (≤15 tiles) and relabels them as lakes.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Rivers</strong> — Traces rivers from inland tiles downhill to the coast, accumulating flow from rainfall.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">4</div>
+    <div class="step-content"><strong>Ancient Sites</strong> — Scatters ancient ruin locations across the map.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">5</div>
+    <div class="step-content"><strong>Ancient Roads</strong> — Connects ancient sites with degraded asphalt roads.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">6</div>
+    <div class="step-content"><strong>Pollution</strong> — Adds pollution zones using Perlin noise (if pollution is enabled).</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">7</div>
+    <div class="step-content"><strong>Factions</strong> — Creates <strong>all</strong> faction objects and places <strong>all</strong> settlements across the map. Every NPC faction base is created here. No settlements exist before this step.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">8</div>
+    <div class="step-content"><strong>Roads</strong> — Builds road networks using minimum-spanning-tree pathfinding. Collects ~95% of existing world objects (primarily the settlements just placed) plus 30–50 extra random nodes per 100k tiles, then connects them. Road endpoints are jittered slightly (0–4 tiles) from their exact settlement position.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">9</div>
+    <div class="step-content"><strong>Landmarks</strong> — Places Odyssey DLC landmarks on valid tiles (density controlled by slider).</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">10</div>
+    <div class="step-content"><strong>Mutators</strong> — Tags tiles with properties: Mountain, Coast, Lakeshore, River, Caves, Mixed Biome, etc.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">11</div>
+    <div class="step-content"><strong>Features</strong> — Places geographic text labels on the world map: mountain range names, lake names, and similar labels.</div>
+  </div>
+</div>
+
+
+<h3 id="p1-terrain">Terrain Generation</h3>
+
+<p>The Terrain step is where vanilla does the heavy lifting. For every tile on the globe, it calculates five values using <strong>noise functions</strong> — mathematical patterns that produce smooth, natural-looking randomness. Think of it like a topographic map generated from layered waves, where the seed determines the exact shape.</p>
+
+<h4 id="p1-elevation">Elevation</h4>
+<p>Vanilla blends two noise patterns — one smooth (Perlin) and one jagged (ridged multifractal) — to create continents with mountain ranges. The result is scaled to 0–5000m. Planet coverage (the "Globe coverage" slider) controls how much land vs. ocean exists: lower coverage creates more isolated island-like continents.</p>
+
+<h4 id="p1-temperature">Temperature</h4>
+<p>Base temperature comes from a <strong>latitude curve</strong>: hot at the equator, cold at the poles. An <strong>elevation lapse rate</strong> (~6.5°C per 1000m of altitude) cools high-elevation tiles. A small noise offset (±4°C) adds local variation. The "Overall temperature" slider scales the final result.</p>
+<p>This produces a reasonable temperature gradient but has no concept of ocean currents, continental interiors being more extreme than coasts, or seasonal variation beyond a simple latitude estimate.</p>
+
+<h4 id="p1-rainfall">Rainfall</h4>
+<p>Base rainfall comes from Perlin noise, then gets shaped by a <strong>latitude curve</strong>:</p>
+<ul>
+  <li>Equator: ×1.12 (tropical rain belt)</li>
+  <li>25° latitude: ×0.94 (subtropical dry zone)</li>
+  <li>45° latitude: ×0.70 (temperate reduction)</li>
+  <li>70°+ latitude: ×0.30 to ×0.05 (polar desert)</li>
+</ul>
+<p>High elevation also reduces rainfall. The result is scaled to 0–4000 mm/year and adjusted by the "Overall rainfall" slider.</p>
+<p>Crucially, vanilla rainfall has <strong>no awareness of mountains</strong>. In reality, mountain ranges create wet windward slopes and dry rain shadows on the leeward side — one of the most important patterns in Earth's climate. Vanilla just applies noise × latitude.</p>
+
+<h4 id="p1-swampiness">Swampiness</h4>
+<p>Swampiness is pure noise (Perlin × ridged multifractal), filtered so it only appears on low-elevation (&lt;200m), flat/small-hills tiles with enough rainfall (&gt;500mm). It has <strong>no connection to water flow, drainage, or terrain</strong> — it's essentially random speckling in lowlands.</p>
+
+<h4 id="p1-hilliness">Hilliness</h4>
+<p>A separate noise pass classifies tiles into five levels: Flat, Small Hills, Large Hills, Mountainous, and Impassable. Mountain ridges come from a "mountain lines" noise, with threshold values determining where ridges and peaks appear.</p>
+
+
+<h3 id="p1-biomes">Biome Selection</h3>
+
+<p>After all tile values are computed, vanilla runs a <strong>biome competition</strong>. Every biome in the game has a <strong>BiomeWorker</strong> — a scoring function that looks at a tile's climate data and returns a number. The biome with the highest score wins that tile.</p>
+
+<p>Vanilla biome scoring is remarkably simple. Some examples:</p>
+<ul>
+  <li><strong>Tundra</strong>: Score = negative temperature. Colder tiles score higher. That's it.</li>
+  <li><strong>Boreal Forest</strong>: Returns a flat 15 if temperature ≥ -10°C and rainfall ≥ 600mm. Otherwise 0.</li>
+  <li><strong>Desert</strong>: Returns temperature + 0.0001 if rainfall &lt; 600mm. Hotter = higher score.</li>
+  <li><strong>Temperate Forest</strong>: Returns 15 if temperature ≥ -10°C and rainfall ≥ 600mm (same conditions as Boreal, but Boreal checks for cold first).</li>
+</ul>
+
+<p>This "if/then/flat-score" approach works but produces <strong>sharp biome boundaries</strong>. A tile at 599mm rainfall is Desert; at 601mm it's suddenly Forest. There are no gradual transitions, no nuance about "how suitable" a tile is for a given biome — just pass/fail checks.</p>
+
+
+<h3 id="p1-rest">Rivers, Lakes, and the Rest</h3>
+
+<p><strong>Rivers</strong> are one of vanilla's better systems. The game builds a drainage tree from every inland tile to the nearest coast, preferring to flow downhill. It accumulates rainfall along the path, and when accumulated flow exceeds a threshold, a river appears. Bigger flow = bigger river (Creek → River → Large River → Huge River). Temperature-based evaporation reduces flow in hot regions.</p>
+
+<p><strong>Lakes</strong> are identified after biome assignment: any cluster of ≤15 contiguous Ocean tiles is relabeled as Lake. This is purely geometric — there's no concept of endorheic basins, terminal lakes, or water collecting in depressions.</p>
+
+<p><strong>Features</strong> are text labels placed on the world map — mountain range names, lake names, and similar geographic labels. They don't affect gameplay directly but help orient the player.</p>
+
+<p><strong>Landmarks</strong> (Odyssey DLC) are world objects placed on valid tiles at a density controlled by a slider. They serve as points of interest for Odyssey's quest and exploration systems.</p>
+
+<p><strong>Mutators</strong> (Odyssey DLC) tag tiles with gameplay-relevant properties: Mountain (mountainous/impassable tiles), Coast (adjacent to ocean), River (has river connections), Caves (50% chance on mountainous, 25% on large hills), and Mixed Biome (20% chance on any tile — blends two biomes for map variety). These tags affect what you encounter when you land on a tile.</p>
+
+
+<h3 id="p1-limits">Vanilla's Limitations</h3>
+
+<p>Vanilla worldgen is functional but has significant gaps that become apparent on larger or more carefully examined worlds:</p>
+
+<ul>
+  <li><strong>No orographic effects.</strong> Mountains don't create rain shadows or wet windward slopes. The Himalayas would have identical rainfall on both sides.</li>
+  <li><strong>No continental climate effects.</strong> Coastal tiles and deep inland tiles with the same latitude get the same temperature. In reality, continental interiors have much more extreme seasons.</li>
+  <li><strong>Noise-only swampiness.</strong> Swamps appear randomly in lowlands rather than forming where water actually collects — along rivers, in basins, in poorly drained flats.</li>
+  <li><strong>Binary biome scoring.</strong> Biomes use simple if/then checks with flat scores. There's no gradient of "how well does this tile fit" — a tile either qualifies or it doesn't.</li>
+  <li><strong>No wind or moisture transport.</strong> Rainfall is noise + latitude. There's no concept of prevailing winds carrying moisture from oceans onto land.</li>
+  <li><strong>Simplistic lakes.</strong> Lakes are just small oceans, not hydrologically formed water bodies.</li>
+</ul>
+
+
+<!-- ========================================================== -->
+<!-- PART 2: WHAT RP2 CHANGES                                    -->
+<!-- ========================================================== -->
+
+<h2 id="p2-glance">Part 2 — What RP2 Changes Under the Hood</h2>
+
+<div class="at-a-glance">
+  <div class="label">At a Glance</div>
+  <p>RP2 intercepts vanilla's Terrain step and replaces it with a <strong>three-phase pipeline</strong>: terrain foundation (extract elevation, build tiles, handle lakes), then a <strong>physically-motivated climate simulation</strong> with 11 layers computed in dependency order (geography → temperature → wind → moisture → orography → rainfall → aridity → hydrology), and finally biome assignment using a <strong>Gaussian competitive scoring system</strong> that replaces vanilla's simple if/then checks.</p>
+  <p>The result is a world where temperature accounts for elevation, latitude, continentality, and ocean currents; rainfall is shaped by wind patterns and mountain rain shadows; swampiness forms where water actually collects; and biomes have nuanced, gradual transitions based on how well each tile's climate fits each biome's ideal conditions. Every biome competes on every tile using the same three-axis scoring framework, with secondary bonuses for terrain features like swampiness, seasonality, or wind exposure.</p>
+  <p>RP2 keeps vanilla's overall pipeline structure (the step order) and preserves elevation/continent shapes, so the world still "feels like RimWorld." Everything after terrain — rivers, roads, factions, landmarks — continues to run as vanilla intended (with optional enhancements like Tier 2 hydrology-based rivers and lakes).</p>
+</div>
+
+
+<h3 id="p2-phases">The Three Phases</h3>
+
+<p>When vanilla would normally run its Terrain step, RP2 intercepts it and runs its own orchestrated pipeline instead:</p>
+
+<div class="pipeline">
+  <div class="pipeline-step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <strong>Terrain Foundation</strong><br>
+      Extract elevation from vanilla's noise (preserving continent shapes). Build tile objects. Convert isolated water clusters into lakes early. Normalize ocean depth tiers. Apply polar landmass shaping for better ice-cap anchoring.
+    </div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">2</div>
+    <div class="step-content">
+      <strong>Climate Computation</strong><br>
+      Run 11 climate layers in dependency order (see <a href="#p2-layers">next section</a>). Each layer builds on the results of previous layers — wind patterns inform moisture transport, which informs rainfall, which informs aridity, and so on.
+    </div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">3</div>
+    <div class="step-content">
+      <strong>Data Application + Biome Assignment</strong><br>
+      Write all computed climate values onto tiles. Apply hilliness and swampiness from RP2's calculations. Run the biome competition using RP2's Gaussian scoring system. Apply any user-configured biome multipliers, offsets, and enable/disable states.
+    </div>
+  </div>
+</div>
+
+
+<h3 id="p2-layers">The 11 Climate Layers</h3>
+
+<p>RP2's climate simulation runs 11 layers in order. Each layer reads from previously computed data and writes new values. Think of it as building up a complete climate picture one piece at a time:</p>
+
+<table>
+  <tr><th>#</th><th>Layer</th><th>What It Computes</th></tr>
+  <tr><td>1</td><td><strong>Geography</strong></td><td>Tile distance from ocean, continent membership, coastal proximity — the geographic foundation everything else builds on.</td></tr>
+  <tr><td>2</td><td><strong>Temperature</strong></td><td>Annual mean temperature from latitude + elevation lapse rate + <strong>continentality</strong> (inland tiles have more extreme temperatures) + <strong>ocean current effects</strong> (warm Gulf Stream-like currents on eastern coasts, cool California Current-like effects on western coasts).</td></tr>
+  <tr><td>3</td><td><strong>Seasonality</strong></td><td>Summer maximum, winter minimum, and seasonal amplitude (the temperature swing between summer and winter). Influenced by latitude, continentality, and axial tilt.</td></tr>
+  <tr><td>4</td><td><strong>Wind</strong></td><td>Prevailing wind direction from latitude bands (trade winds, westerlies, polar easterlies). Used by the moisture and orography layers to determine which side of mountains is windward.</td></tr>
+  <tr><td>5</td><td><strong>Moisture</strong></td><td>Base moisture potential from latitude, temperature capacity (cold air holds less moisture), and proximity to ocean. Creates the raw "how much water is available" field.</td></tr>
+  <tr><td>6</td><td><strong>Moisture Advection</strong></td><td>Transports moisture inland along wind directions. Moisture decreases as it moves away from its ocean source. This creates the realistic pattern of wet coasts and dry interiors.</td></tr>
+  <tr><td>7</td><td><strong>Orography</strong></td><td>Mountain rain shadow effects. <strong>Windward</strong> slopes (facing the wind) get enhanced rainfall as air is forced upward and cools. <strong>Leeward</strong> slopes (sheltered behind mountains) get dramatically reduced rainfall. This is one of RP2's most visible improvements.</td></tr>
+  <tr><td>8</td><td><strong>Monsoon</strong></td><td>Seasonal moisture boost for tiles that receive significant wet-season rainfall, modeled on monsoon climates.</td></tr>
+  <tr><td>9</td><td><strong>Rainfall</strong></td><td>Combines all moisture sources (base, advected, orographic, monsoon) into final rainfall in mm/year, with random variation for natural diversity.</td></tr>
+  <tr><td>10</td><td><strong>Aridity</strong></td><td>Computes the <strong>Aridity Index</strong> (AI = annual rainfall ÷ potential evapotranspiration). This single number captures how wet or dry a climate truly is, accounting for both rainfall and how quickly water evaporates. See <a href="#glossary">Glossary</a>.</td></tr>
+  <tr><td>11</td><td><strong>Hydrology</strong></td><td>Water flow simulation (both tiers are opt-in, defaulting to OFF). Tier 1: drainage-aware swampiness (swamps form where water collects, not randomly). Tier 2 (in development): full flow routing, custom rivers, lake formation in basins, wetland classification. When hydrology is off, vanilla swampiness is used as-is.</td></tr>
+</table>
+
+
+<h3 id="p2-scoring">How Biome Scoring Works in RP2</h3>
+
+<p>This is the heart of RP2's biome system, and understanding it is essential for using the Biome Editor effectively.</p>
+
+<p>Where vanilla uses simple if/then checks ("is rainfall above 600mm? → score 15"), RP2 uses a <strong>continuous scoring system</strong> where every biome scores every tile based on how closely the tile's climate matches the biome's ideal conditions. The closer the match, the higher the score. The biome with the highest score wins.</p>
+
+<h4 id="p2-gaussian">The Gaussian Curve — "Ideal ± Tolerance"</h4>
+
+<p>Each biome has an <strong>ideal value</strong> for each climate axis (e.g., Temperate Forest ideally wants 12°C annual temperature). It also has a <strong>tolerance</strong> that controls how far from the ideal a tile can be before the score drops significantly.</p>
+
+<p>The scoring uses a bell curve (Gaussian) shape:</p>
+<ul>
+  <li>At the <strong>ideal value</strong>, the score is at maximum.</li>
+  <li>At <strong>±1 tolerance</strong> away from ideal, the score drops to about 61% of maximum.</li>
+  <li>At <strong>±2 tolerances</strong> away, the score is near zero (and actually goes slightly negative).</li>
+</ul>
+
+<p>For example, Temperate Forest has IdealTemp = 12°C and TempTolerance = 6°C:</p>
+<ul>
+  <li>A tile at 12°C → maximum temperature score.</li>
+  <li>A tile at 6°C or 18°C (±1 tolerance) → about 61% of max.</li>
+  <li>A tile at 0°C or 24°C (±2 tolerances) → score is near zero.</li>
+</ul>
+
+<p>This creates <strong>gradual transitions</strong> between biomes. There's no sharp cutoff — biomes smoothly fade in and out based on how well the climate fits. Where two biomes overlap in suitability, the one with the better overall fit wins.</p>
+
+<div class="info-box tip">
+  <div class="box-label">Key concept</div>
+  <p>A <strong>smaller tolerance</strong> means the biome is pickier — it only appears where conditions closely match its ideal. A <strong>larger tolerance</strong> means the biome is more flexible and can appear across a wider range of conditions. In the Biome Editor, adjusting tolerance is the primary way to control how widespread a biome is.</p>
+</div>
+
+<h4 id="p2-axes">The Three Primary Axes</h4>
+
+<p>Every biome's primary score is the weighted combination of three axes:</p>
+
+<table>
+  <tr><th>Axis</th><th>Weight</th><th>What It Measures</th></tr>
+  <tr><td><strong>Temperature</strong></td><td>40%</td><td>Annual mean temperature (°C). Every biome has an ideal temperature and tolerance.</td></tr>
+  <tr><td><strong>Moisture</strong></td><td>40%</td><td>How wet or dry the climate is. <em>What value is used depends on whether the biome is cold or warm</em> — see <a href="#p2-cold-warm">next section</a>.</td></tr>
+  <tr><td><strong>Elevation</strong></td><td>20%</td><td>Meters above sea level. Some biomes have dual elevation profiles (e.g., Tundra appears at low polar elevations <em>and</em> at high alpine elevations).</td></tr>
+</table>
+
+<p>The three axis scores are combined into a single primary score (0–100 scale). This is the base competitiveness of a biome at that tile.</p>
+
+<h4 id="p2-cold-warm">Cold vs. Warm Biomes — Rainfall vs. Aridity Index</h4>
+
+<p>This is a subtlety that matters for understanding the Biome Editor.</p>
+
+<p>For the moisture axis, RP2 uses <strong>two different measurements</strong> depending on the biome's climate zone:</p>
+
+<ul>
+  <li><strong>Warm biomes</strong> (ideal temp ≥ 0°C) use the <strong>Aridity Index</strong> (AI). The AI is rainfall divided by potential evapotranspiration — it measures effective moisture, accounting for the fact that hot regions need more rain to stay wet because water evaporates faster. An AI of 0.05 is hyper-arid desert; 1.0 is balanced; 2.0+ is very humid.</li>
+  <li><strong>Cold biomes</strong> (ideal temp &lt; 0°C) use <strong>absolute rainfall</strong> in mm/year. In cold regions, evapotranspiration is very low (cold air can't evaporate much water), so even modest rainfall gives a very high AI. Using AI would make every cold tile look "humid," which is misleading. Absolute rainfall better captures the real moisture difference between, say, a dry polar desert and a wetter tundra.</li>
+</ul>
+
+<p>In the Biome Editor, you'll see this reflected: warm biomes show <strong>Aridity*</strong> (with an asterisk indicating it's the active moisture axis) and Rainfall without an asterisk. Cold biomes show the reverse: <strong>Rainfall*</strong> is active and Aridity is inactive.</p>
+
+<h4 id="p2-secondaries">Secondary Bonuses</h4>
+
+<p>On top of the primary score, each biome can have <strong>secondary bonuses or penalties</strong> based on additional tile properties. These are applied as a percentage modifier:</p>
+
+<p style="text-align:center; font-size: 1.05em; margin: 16px 0;">
+  <code>Final Score = Primary Score × (1 + secondary percentage)</code>
+</p>
+
+<p>Secondary bonuses are meant to capture factors <strong>beyond the three primary axes</strong>. Some examples:</p>
+
+<ul>
+  <li><strong>Swampiness:</strong> Cold Bog and Tropical Swamp get large bonuses for high swampiness. Boreal Forest gets a penalty for it (forests aren't swamps).</li>
+  <li><strong>Windward/Leeward:</strong> Boreal Forest gets a bonus on windward slopes (where it rains more). Desert gets a bonus on leeward slopes (rain shadows).</li>
+  <li><strong>Continentality:</strong> Cold Desert and Extreme Desert get bonuses for continental interiors (far from ocean = more extreme = more desert-like).</li>
+  <li><strong>Seasonality:</strong> Boreal Forest gets a bonus for high seasonal amplitude (harsh winters + warm summers). Glowforest prefers low seasonality (stable, humid conditions).</li>
+  <li><strong>Wetland Intensity:</strong> Swamp biomes get bonuses for RP2's hydrology-computed wetland data.</li>
+</ul>
+
+<p>Secondary percentages are capped per biome (typically ±50% for normal biomes, wider for parasitic biomes) to prevent any single factor from overwhelming the primary scoring.</p>
+
+<h4 id="p2-gates">Hard Gates</h4>
+
+<p>Some biomes have <strong>hard gates</strong> — absolute requirements that, if not met, instantly reject the tile (score = -100) regardless of how good the primary fit might be. These exist for physical impossibilities:</p>
+
+<ul>
+  <li><strong>Ice Sheet</strong>: Summer maximum temperature must be ≤ 0°C. You cannot have an ice sheet where it gets above freezing in summer.</li>
+  <li><strong>Tropical Rainforest / Tropical Swamp / Savanna</strong>: Winter minimum must be ≥ 18°C. Tropical biomes require year-round warmth.</li>
+  <li><strong>Cold Bog</strong>: Winter minimum must be &lt; 5°C. A "cold" bog needs cold winters.</li>
+  <li><strong>Desert / Extreme Desert</strong>: Aridity Index must be below a threshold. You can't have desert in a rainy climate.</li>
+  <li><strong>Swamp biomes</strong>: Must have some swampiness or wetland intensity. No swamp on dry ground.</li>
+</ul>
+
+<p>Hard gates should only reject tiles where the biome is <em>physically impossible</em>. Overusing them (or setting thresholds too tight) is a common source of biome distribution problems.</p>
+
+<h4 id="p2-parasitic">Parasitic Biomes</h4>
+
+<p>Some biomes don't compete independently — they <strong>parasitize a host biome</strong>. A parasitic biome can only appear on tiles where its host biome would already score well. It then uses <strong>noise clumping</strong> to create spatial patches (clusters of tiles) rather than appearing everywhere the host exists.</p>
+
+<p>Examples:</p>
+<ul>
+  <li><strong>Glacial Plain</strong> parasitizes Tundra/Ice Sheet. It appears as patchy frozen plains within tundra regions.</li>
+  <li><strong>Lava Field</strong> parasitizes Desert/Extreme Desert/Arid Shrubland. Rare volcanic patches in arid terrain.</li>
+  <li><strong>Scarlands</strong> parasitizes Temperate Forest. Clusters of ancient ruined cities in temperate zones.</li>
+  <li><strong>Glowforest</strong> parasitizes Temperate/Boreal/Swamp forests. Bioluminescent forest patches.</li>
+  <li><strong>Oasis</strong> parasitizes Desert. Rare scattered fertile spots in desert.</li>
+</ul>
+
+<p>Parasitic biomes have three noise parameters you can adjust in the Biome Editor:</p>
+<ul>
+  <li><strong>Noise threshold</strong> — Higher = rarer (fewer tiles pass). A threshold of 0.80 means only the top ~10% of noise values pass.</li>
+  <li><strong>Noise bonus</strong> — How much score boost tiles get when they pass the noise check.</li>
+  <li><strong>Noise penalty</strong> — How much score penalty tiles get when they fail the noise check.</li>
+</ul>
+
+
+<h3 id="p2-hydrology">Hydrology</h3>
+
+<p>RP2's hydrology system has three states, all controlled in Mod Settings. <strong>Both tiers default to OFF</strong> — they are fully opt-in.</p>
+
+<dl>
+  <dt>Off (default)</dt>
+  <dd>RP2 uses vanilla's tile swampiness values as-is. Biomes that rely on swampiness still work, just with vanilla's noise-based placement rather than terrain-aware placement. This is the lightest option.</dd>
+
+  <dt>Tier 1 — Drainage-Aware Swampiness (opt-in)</dt>
+  <dd>Replaces vanilla's random swampiness with terrain-aware calculations. Swamps form in low-lying, poorly drained areas — along rivers, in basins, in flat lowlands. This alone makes swamp biome placement dramatically more realistic, with minimal performance cost.</dd>
+
+  <dt>Tier 2 — Advanced Hydrology (opt-in, in development)</dt>
+  <dd>A full water flow simulation that routes rainfall across the terrain, forming rivers where flow accumulates, lakes in closed basins, and wetlands where drainage is poor. Enables custom RP2-generated rivers (replacing vanilla's simpler river algorithm), climate-driven lake formation, and detailed wetland classification. Requires Tier 1 to be enabled and the Odyssey DLC. Tier 2 is more computationally expensive.</dd>
+</dl>
+
+<div class="info-box warning">
+  <div class="box-label">Development note</div>
+  <p>Tier 2 Advanced Hydrology is currently in active development and testing. It is not yet available in public releases. When shipped, it will appear as an opt-in toggle in Mod Settings alongside Tier 1.</p>
+</div>
+
+
+<h3 id="p2-compat">Modded Biome Support</h3>
+
+<p>RP2 supports biomes from other mods through a compatibility system. In the Biome Editor, you'll see a status label indicating how well RP2 knows the biome:</p>
+
+<ul>
+  <li><span style="color: var(--green); font-weight: 600;">Native/Mapped</span> (green) — Core, Odyssey, and RP2's own biomes. Fully integrated with hand-tuned scoring parameters.</li>
+  <li><span style="color: var(--cyan); font-weight: 600;">Calibrated</span> (cyan) — Modded biomes that RP2 has specific compatibility workers for (e.g., Alpha Biomes, More Vanilla Biomes, ReGrowth 2). Tuned to work within RP2's scoring system.</li>
+  <li><span style="color: var(--red); font-weight: 600;">UNCALIBRATED</span> (red) — Unknown modded biomes. RP2 wraps them with generic scoring but they may not distribute well without manual Biome Editor tuning.</li>
+</ul>
+
+
+<!-- ========================================================== -->
+<!-- PART 3: USING RP2'S TOOLS                                   -->
+<!-- ========================================================== -->
+
+<h2 id="p3-nav">Part 3 — Using RP2's Tools</h2>
+
+<h3>Navigation Overview</h3>
+
+<p>RP2 adds its tools to two locations: the <strong>Mod Settings</strong> menu (persistent settings) and the <strong>World Creation</strong> screen (per-world settings).</p>
+
+<figure>
+  <img src="Images\Create world.png" alt="World creation screen showing the Advanced dropdown with Climate and Biomes options">
+  <figcaption>The "Create world" screen. The <strong>Advanced</strong> button at the bottom opens a dropdown with two options: <strong>Climate</strong> (Advanced Climate Settings) and <strong>Biomes</strong> (Advanced Biome Configuration).</figcaption>
+</figure>
+
+<p>From the Create world screen, you also have access to RP2's additions: the <strong>Sea level</strong>, <strong>Axial tilt</strong>, and <strong>RP Mountains</strong> controls on the left side, plus a <strong>Presets</strong> row (Save/Load/Delete) for saving entire world creation configurations. The <strong>Random planet</strong> button generates a randomized seed with randomized slider values.</p>
+
+<div class="info-box tip">
+  <div class="box-label">Note: Misc. settings</div>
+  <p>The <strong>Misc. settings</strong> button on the left side is <em>not</em> an RP2 feature — it is vanilla RimWorld's "Advanced" settings, renamed by RP2 for clarity. It contains the same vanilla options (pollution, planet coverage, etc.).</p>
+</div>
+
+
+<h3 id="p3-modsettings">Mod Settings</h3>
+
+<figure>
+  <img src="Images\Mod Settings.png" alt="Mod Settings window showing tabs: Main, Features, Lighting, Integrations, MMF">
+  <figcaption>RP2 Mod Settings — accessible from RimWorld's Options > Mod Settings > Realistic Planets 2.</figcaption>
+</figure>
+
+<p>The Mod Settings are <strong>persistent</strong> (they apply across all worlds). The tabs:</p>
+
+<dl>
+  <dt>Main</dt>
+  <dd>Display toggles: show/hide stone types, growing period, disease frequency, and moon status widget in the game UI.</dd>
+
+  <dt>Features</dt>
+  <dd>Toggle RP2's major features on and off. This is where you enable/disable <strong>Tier 1 Hydrology</strong> (drainage-aware swampiness) and other optional systems. Tier 2 Advanced Hydrology will also appear here when it ships.</dd>
+
+  <dt>Lighting</dt>
+  <dd>Configure RP2's lighting system (moon phases, ambient light behavior).</dd>
+
+  <dt>Integrations</dt>
+  <dd>Settings for compatibility with other mods.</dd>
+
+  <dt>MMF</dt>
+  <dd>Map Mode Framework caching settings (performance tuning for the world map overlay system).</dd>
+
+</dl>
+
+
+<h3 id="p3-climate">Advanced Climate Settings</h3>
+
+<figure>
+  <img src="Images\Advanced Climate Settings.png" alt="Advanced Climate Settings window showing Temperature tab with sliders for latitude curve, polar cold penalty, continentality, and ocean currents">
+  <figcaption>Advanced Climate Settings — accessed from Create world > Advanced > Climate.</figcaption>
+</figure>
+
+<p>This dialog lets you fine-tune the climate simulation parameters used in <a href="#p2-layers">Phase 2's climate layers</a>. It has two tabs (three when Tier 2 Hydrology becomes available):</p>
+
+<h4>Temperature Tab</h4>
+<dl>
+  <dt>Manual Temperature Targets</dt>
+  <dd>When enabled, bypasses the "Overall temperature" slider and lets you set exact polar and equatorial mean temperatures. Useful for creating extreme worlds (ice planet, hot desert planet).</dd>
+
+  <dt>Latitude Temperature Curve</dt>
+  <dd>Controls how sharply temperature drops from equator to poles. Lower exponent = gentler gradient (milder poles). Higher = sharper (more extreme poles).</dd>
+
+  <dt>Polar Cold Penalty</dt>
+  <dd>Extra cooling applied above 75° latitude. Makes poles colder without affecting the rest of the world.</dd>
+
+  <dt>Continentality (Ocean Influence)</dt>
+  <dd><strong>Ocean influence distance</strong> controls how far inland the ocean's temperature-stabilizing effect reaches. <strong>Inland temperature penalty</strong> adds extra cooling for deep continental interiors.</dd>
+
+  <dt>Coastal Moderation</dt>
+  <dd>Controls how far inland coastal temperature stabilization extends (reducing seasonal extremes near coasts).</dd>
+
+  <dt>Ocean Currents</dt>
+  <dd>Western boundary current warming (Gulf Stream-like), eastern boundary current cooling (California Current-like), and storm track warming. These create temperature asymmetry between east and west coasts.</dd>
+</dl>
+
+<h4>Rainfall Tab</h4>
+<dl>
+  <dt>Orographic Effects (Mountains)</dt>
+  <dd>Controls windward rainfall enhancement and leeward suppression (rain shadow strength). Also sets the influence radius — how far from a mountain ridge the effects are felt.</dd>
+
+  <dt>Cold Limitation</dt>
+  <dd>Controls how sharply cold temperatures reduce the atmosphere's ability to hold moisture (and therefore rainfall).</dd>
+
+  <dt>Random Variation</dt>
+  <dd>Percentage-based climate noise and maximum absolute variation. Adds natural diversity so identical latitudes don't all have identical rainfall.</dd>
+</dl>
+
+<h4>Hydrology Tab (Tier 2 only — not yet in public releases)</h4>
+<dl>
+  <dt>Hydrology Scale</dt>
+  <dd>Reference rainfall for flow-to-drainage conversion. Affects river formation and wetland intensity globally.</dd>
+
+  <dt>Basin Climate Thresholds</dt>
+  <dd>Minimum rainfall for freshwater lakes in closed basins, and maximum rainfall for salt flat/playa formation.</dd>
+
+  <dt>Evaporation Model</dt>
+  <dd>Global evaporation multiplier and min/max daily evaporation rates.</dd>
+</dl>
+
+<div class="info-box warning">
+  <div class="box-label">Caution</div>
+  <p>Extreme values in Advanced Climate Settings can produce unrealistic or broken climates. If you're unsure, use the <strong>Reset to Default</strong> button to restore all settings.</p>
+</div>
+
+
+<h3 id="p3-biomes">Advanced Biome Configuration</h3>
+
+<figure>
+  <img src="Images\Advanced Biome Configuration.png" alt="Advanced Biome Configuration screen showing biome list with enable toggles, frequency sliders, score offset sliders, and Edit/Reset buttons">
+  <figcaption>Advanced Biome Configuration — accessed from Create world > Advanced > Biomes. Each biome row has an enable toggle, frequency multiplier (0x–5x), score offset (-50 to +50), and Edit/Reset buttons.</figcaption>
+</figure>
+
+<p>This is your <strong>per-world biome control panel</strong>. It affects the current world generation only (not saved globally unless you save a profile).</p>
+
+<h4>Per-Biome Controls</h4>
+<dl>
+  <dt>Enable/Disable (checkbox)</dt>
+  <dd>Toggle a biome on or off entirely. Disabled biomes never appear. Some biomes may be locked (greyed out) if they're required by the game or a DLC.</dd>
+
+  <dt>Freq (Frequency Multiplier): 0x – 5x</dt>
+  <dd>Scales the biome's base score. At 1x (default), the biome competes normally. At 2x, it scores twice as high, making it roughly twice as common. At 0x, it effectively never wins any tile.</dd>
+
+  <dt>Score Offset: -50 to +50</dt>
+  <dd>A flat bonus or penalty added to the biome's final score. Unlike Freq (which multiplies), this <em>adds</em> a fixed amount. Useful for nudging a biome up or down without dramatically scaling it.</dd>
+
+  <dt>Edit</dt>
+  <dd>Opens the <a href="#p3-editor">Biome Editor</a> for deep per-biome tuning.</dd>
+
+  <dt>Reset</dt>
+  <dd>Resets this biome's row to default values (enabled, 1x freq, 0 offset).</dd>
+</dl>
+
+<h4>Navigation and Filtering</h4>
+<ul>
+  <li>A <strong>search field</strong> at the top filters biomes by name.</li>
+  <li>Biomes are grouped by source: <strong>Core</strong> (vanilla + RP2), <strong>Odyssey</strong> (DLC), and mod groups (Alpha Biomes, etc.).</li>
+  <li>Section headers can be <strong>collapsed/expanded</strong> by clicking them.</li>
+</ul>
+
+<h4>Profiles</h4>
+<p>The top row has <strong>Save Profile</strong>, <strong>Load Profile</strong>, <strong>Delete Profile</strong>, and <strong>Reset/Clear</strong> buttons. See <a href="#p3-presets">Profiles &amp; Presets</a> for details.</p>
+
+
+<h3 id="p3-editor">Biome Editor</h3>
+
+<figure>
+  <img src="Images\Biome Editor.png" alt="Biome Editor showing Grassland with BiomeWorker tab, scoring variable checkboxes, and variable controls with ideal/tolerance values">
+  <figcaption>Biome Editor for Grassland — showing the BiomeWorker tab with scoring variable checkboxes (top) and editable controls (bottom). Green values in brackets are the defaults.</figcaption>
+</figure>
+
+<p>The Biome Editor is where you do <strong>deep, per-biome tuning</strong>. Each biome's editor has two tabs: <strong>BiomeWorker</strong> (scoring parameters) and <strong>BiomeDef</strong> (gameplay overrides).</p>
+
+<div class="info-box tip">
+  <div class="box-label">Development note</div>
+  <p>The Biome Editor is still in active development. Its interface and feature set will continue to grow and change in future updates. The description below reflects its current state.</p>
+</div>
+
+<p>At the top, a colored status label tells you the biome's compatibility level:</p>
+<ul>
+  <li><span style="color: var(--green); font-weight: 600;">Native/Mapped</span> — Core/Odyssey/RP2 biomes with full scoring integration.</li>
+  <li><span style="color: var(--cyan); font-weight: 600;">Calibrated</span> — Modded biomes with RP2 compatibility workers.</li>
+  <li><span style="color: var(--red); font-weight: 600;">UNCALIBRATED</span> — Unknown biomes with generic scoring.</li>
+</ul>
+
+<h4 id="p3-worker-tab">BiomeWorker Tab — Scoring Variables</h4>
+
+<p>The top section shows <strong>Scoring Variables</strong> as a grid of checkboxes arranged in three columns. A green check means the variable is active for this biome's scoring; a red X means it's not used. These reflect what the biome's worker actually cares about.</p>
+
+<p>You can toggle variables on and off. When a variable is checked, its controls appear in the scrollable <strong>Variable Controls</strong> section below.</p>
+
+<h4>"Use custom values" Override</h4>
+<p>By default, the editor shows the biome's built-in values (displayed in colored brackets next to each field). Changing a value here <strong>does not take effect</strong> unless you enable <strong>"Use custom values (override native/calibrated)"</strong>. When this is checked, your custom values replace the biome's built-in scoring.</p>
+
+<h4>Variable Reference</h4>
+<p>Here's what each editable variable means. Refer to <a href="#p2-scoring">How Biome Scoring Works</a> for the underlying concepts.</p>
+
+<p><strong>Primary Scoring Variables</strong> (the three axes that make up the 0–100 primary score):</p>
+<dl>
+  <dt>Ideal Temperature (°C) + Temperature Tolerance</dt>
+  <dd>The biome's ideal annual mean temperature and how far from that ideal the biome can comfortably exist. Wider tolerance = biome appears across a larger temperature range.</dd>
+
+  <dt>Ideal Rainfall (mm/year) + Rainfall Tolerance</dt>
+  <dd>Used by <strong>cold biomes</strong> (ideal temp &lt; 0°C). The ideal annual precipitation in mm and the acceptable deviation.</dd>
+
+  <dt>Ideal Aridity Index + Aridity Tolerance</dt>
+  <dd>Used by <strong>warm biomes</strong> (ideal temp ≥ 0°C). The ideal AI value and tolerance. Lower AI = drier (desert ~0.05); higher AI = wetter (rainforest ~2.3). See <a href="#glossary">Glossary</a>.</dd>
+
+  <dt>Ideal Elevation (m) + Elevation Tolerance</dt>
+  <dd>The biome's ideal altitude and tolerance. Some biomes have dual elevation profiles (e.g., lowland and highland).</dd>
+</dl>
+
+<p><strong>Secondary Scoring Variables</strong> (percentage modifiers on top of primary score):</p>
+<dl>
+  <dt>Swampiness (tile) — Ideal + Tolerance</dt>
+  <dd>Vanilla tile swampiness (0–1). Swamp biomes want high values; forest biomes may penalize it.</dd>
+
+  <dt>Wetland Intensity — Ideal + Tolerance</dt>
+  <dd>RP2 hydrology-computed wetland data (0–1). Like swampiness but based on actual water flow rather than noise.</dd>
+
+  <dt>Preferred Hilliness</dt>
+  <dd>Integer 0–4: Flat, Small Hills, Large Hills, Mountainous, Impassable. Some biomes prefer specific terrain roughness.</dd>
+
+  <dt>Continentality — Ideal + Tolerance</dt>
+  <dd>How far inland the tile is (0 = coastal, 1 = deep interior). Desert biomes often prefer high continentality.</dd>
+
+  <dt>Seasonality (amplitude) — Ideal + Tolerance</dt>
+  <dd>The temperature difference between summer and winter in °C. High seasonality = harsh continental climate. Low = stable oceanic/tropical.</dd>
+
+  <dt>Windward — Threshold + Scale</dt>
+  <dd>How much the tile is on the wind-facing side of terrain. Threshold = minimum value to trigger the bonus. Scale = bonus strength.</dd>
+
+  <dt>Leeward — Threshold + Scale</dt>
+  <dd>How much the tile is sheltered behind terrain (rain shadow). Same threshold/scale system as windward.</dd>
+
+  <dt>Flow Accumulation — Threshold + Scale</dt>
+  <dd>How much water flows through or collects at this tile. Relevant for river-adjacent and basin biomes.</dd>
+
+  <dt>Summer Max Temp (°C) — Ideal + Tolerance</dt>
+  <dd>Peak summer temperature. Used as a hard gate by some biomes (e.g., Ice Sheet requires summer max ≤ 0°C) and as a scoring factor by others.</dd>
+
+  <dt>Winter Min Temp (°C) — Ideal + Tolerance</dt>
+  <dd>Coldest winter temperature. Tropical biomes require winter min ≥ 18°C; cold biomes may bonus for very low values.</dd>
+
+  <dt>Monsoon Boost — Threshold + Scale</dt>
+  <dd>Seasonal moisture boost. Tiles with monsoon rainfall above the threshold get a scoring bonus scaled by this value.</dd>
+
+  <dt>Noise (parasitic biomes only)</dt>
+  <dd>Controls spatial clumping. See <a href="#p2-parasitic">Parasitic Biomes</a>. Shows either <strong>Threshold/Bonus/Penalty</strong> for standard parasitic biomes, or a single <strong>Pass Probability</strong> for special cases.</dd>
+</dl>
+
+<h4 id="p3-def-tab">BiomeDef Tab — Gameplay Overrides</h4>
+
+<p>The BiomeDef tab lets you override selected gameplay values for the biome. These affect in-game behavior, not world generation scoring.</p>
+
+<dl>
+  <dt>Animal Density</dt>
+  <dd>Multiplier for animal spawning in this biome.</dd>
+
+  <dt>Plant Density</dt>
+  <dd>Multiplier for plant spawning in this biome.</dd>
+
+  <dt>Disease Interval (days)</dt>
+  <dd>Average days between disease events. Higher = fewer diseases.</dd>
+
+  <dt>Settlement Selection Weight</dt>
+  <dd>How likely AI factions are to settle in this biome.</dd>
+</dl>
+
+<p>Like the BiomeWorker tab, these overrides only take effect when <strong>"Override biome stats"</strong> is enabled.</p>
+
+
+<h3 id="p3-presets">Profiles &amp; Presets</h3>
+
+<p>RP2 has two levels of saved configurations:</p>
+
+<h4>Profiles (global, in Advanced Biome Configuration)</h4>
+<p>A profile is a snapshot of <em>all</em> biomes' enabled states, frequency multipliers, score offsets, and which per-biome preset each biome is using. Profiles live in the Advanced Biome Configuration screen.</p>
+<ul>
+  <li><strong>Save Profile</strong> — Save current configuration with a name and description. Choose to overwrite an existing profile or create a new one.</li>
+  <li><strong>Load Profile</strong> — Apply a saved profile. Loading the <strong>same profile twice</strong> (without closing the dialog) sets it as the <strong>default</strong> — it will auto-load on every new world creation.</li>
+  <li><strong>Delete Profile</strong> — Remove a saved profile.</li>
+  <li><strong>Reset/Clear</strong> — Two options: "Reset All" restores all biomes to defaults. "Clear Default" removes the auto-load profile so no profile loads automatically.</li>
+</ul>
+
+<h4>Presets (per-biome, in Biome Editor)</h4>
+<p>A preset is a saved configuration for a <em>single</em> biome's scoring variables and gameplay overrides. Presets live in the Biome Editor.</p>
+<ul>
+  <li><strong>Save Preset</strong> — Save current biome configuration. Can create new or overwrite existing.</li>
+  <li><strong>Load Preset</strong> — Apply a saved preset to this biome. Loading the <strong>same preset twice</strong> sets it as the <strong>default for this biome</strong>.</li>
+  <li><strong>Delete Preset</strong> — Remove a saved preset.</li>
+  <li><strong>Reset/Clear</strong> — "Reset All" restores to hardcoded worker defaults. "Clear Default" removes the auto-load preset for this biome.</li>
+</ul>
+
+<div class="info-box tip">
+  <div class="box-label">How defaults interact</div>
+  <p>On world creation, RP2 first loads the <strong>default profile</strong> (if set), then loads any <strong>per-biome default presets</strong> on top, overriding the profile for those specific biomes. This lets you have a global baseline with per-biome specializations.</p>
+</div>
+
+
+<h3 id="p3-workflow">Practical Workflow</h3>
+
+<div class="pipeline">
+  <div class="pipeline-step">
+    <div class="step-num">1</div>
+    <div class="step-content"><strong>Start broad.</strong> Use the world creation sliders (temperature, rainfall, sea level) and Advanced Biome Configuration (enable/disable, frequency, score offset) to get the rough biome mix you want.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">2</div>
+    <div class="step-content"><strong>Generate and inspect.</strong> Generate a test world and look at the biome distribution. Use map modes (if available) to see temperature, rainfall, and aridity overlays.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">3</div>
+    <div class="step-content"><strong>Targeted fixes.</strong> If a specific biome is too common or too rare, open its Biome Editor. Adjust <strong>tolerance</strong> first (wider = more common, narrower = rarer). Then try shifting the <strong>ideal value</strong> if the biome is appearing in the wrong climate zone.</div>
+  </div>
+  <div class="pipeline-step">
+    <div class="step-num">4</div>
+    <div class="step-content"><strong>Save when happy.</strong> Save a profile in Advanced Biome Configuration and per-biome presets in the Biome Editor. Set defaults only when you're confident you want those values for every new world.</div>
+  </div>
+</div>
+
+
+<h3 id="p3-mistakes">Common Mistakes</h3>
+
+<ul>
+  <li><strong>Changing too many variables at once.</strong> Change one thing, regenerate, and check the result. Multiple simultaneous changes make it impossible to know what caused the effect.</li>
+  <li><strong>Using large score offsets as a first step.</strong> A +30 score offset brute-forces a biome onto tiles where it doesn't naturally fit. It's better to adjust tolerance and ideal values so the biome <em>naturally</em> scores well where you want it.</li>
+  <li><strong>Forgetting the "Use custom values" toggle.</strong> Editing values in the Biome Editor does nothing unless you enable the override checkbox. This is by design — it protects against accidental changes.</li>
+  <li><strong>Not understanding which moisture axis is active.</strong> If you're editing a cold biome (ideal temp &lt; 0°C), the Rainfall axis is what matters. Changing the Aridity values won't affect scoring. Look for the asterisk (*) marking the active axis.</li>
+  <li><strong>Auto-load confusion.</strong> Both profiles <em>and</em> per-biome presets can auto-load. If your world always starts with unexpected biome settings, check both: the default profile in Advanced Biome Configuration, and per-biome defaults in each Biome Editor.</li>
+</ul>
+
+
+<!-- ========================================================== -->
+<!-- GLOSSARY                                                     -->
+<!-- ========================================================== -->
+
+<h2 id="glossary">Glossary</h2>
+
+<dl>
+  <dt>Aridity Index (AI)</dt>
+  <dd>Annual rainfall divided by potential evapotranspiration (PET — how much water <em>would</em> evaporate given unlimited supply). AI &lt; 0.05 = hyper-arid; 0.05–0.20 = arid; 0.20–0.50 = semi-arid; 0.50–0.65 = dry sub-humid; 0.65+ = humid. A hot desert might have AI = 0.03; a temperate forest ~1.0; a tropical rainforest ~2.3+. RP2 uses AI for warm biome moisture scoring because it captures <em>effective</em> moisture — 500mm of rain means very different things in a cold tundra vs. a hot desert.</dd>
+
+  <dt>BiomeWorker</dt>
+  <dd>The scoring function for a biome. Each biome has one BiomeWorker that evaluates every tile and returns a score. RP2 replaces vanilla's simple workers with Gaussian-curve-based workers.</dd>
+
+  <dt>Continentality</dt>
+  <dd>How far a tile is from the ocean, expressed as a 0–1 value. High continentality means the tile is deep inland, experiencing more extreme seasonal temperature swings and receiving less oceanic moisture.</dd>
+
+  <dt>Gaussian Curve</dt>
+  <dd>A bell-shaped mathematical curve used by RP2 to score biome suitability. Maximum score at the ideal value, smoothly declining as conditions deviate. The tolerance parameter controls the width of the bell.</dd>
+
+  <dt>Hard Gate</dt>
+  <dd>An absolute pass/fail requirement in a biome's scoring. If a tile fails a hard gate, it scores -100 regardless of all other factors. Used for physical impossibilities (e.g., ice sheet where it's above freezing).</dd>
+
+  <dt>Leeward</dt>
+  <dd>The side of a mountain range sheltered from prevailing winds. Receives less rainfall (rain shadow effect). Opposite of windward.</dd>
+
+  <dt>Noise Clumping</dt>
+  <dd>A spatial noise pattern used by parasitic biomes to create clusters of tiles rather than uniform distribution. The noise value at each tile determines whether the parasitic biome can appear there.</dd>
+
+  <dt>Orographic Effect</dt>
+  <dd>The influence of mountains on rainfall. Air forced upward over mountains cools and drops moisture (windward enhancement). After crossing, the descending air is dry (leeward suppression / rain shadow).</dd>
+
+  <dt>Parasitic Biome</dt>
+  <dd>A biome that requires a host biome to score well at a tile before it can compete. Uses noise clumping to create spatial patches. Examples: Glacial Plain (on Tundra), Lava Field (on Desert), Scarlands (on Temperate Forest).</dd>
+
+  <dt>Primary Score</dt>
+  <dd>The base score (0–100) computed from the three weighted axes: Temperature (40%), Moisture (40%), Elevation (20%).</dd>
+
+  <dt>Secondary Bonus</dt>
+  <dd>A percentage modifier applied on top of the primary score. Captures factors beyond the three main axes (swampiness, windward, continentality, etc.). Applied as: final = primary × (1 + secondary%).</dd>
+
+  <dt>Tolerance</dt>
+  <dd>How far from a biome's ideal value a tile can deviate before the score drops significantly. At ±1 tolerance, score is ~61% of max. At ±2, it's near zero. Wider tolerance = biome appears in more places.</dd>
+
+  <dt>Windward</dt>
+  <dd>The side of a mountain range facing prevailing winds. Receives enhanced rainfall as moist air is forced upward. Opposite of leeward.</dd>
+</dl>
+
+
+</main>
+</div>
+
+</body>
+</html>
